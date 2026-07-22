@@ -94,28 +94,32 @@ pipeline {
         }
 
         stage('Fetch Secrets From Vault & Harbor Login') {
-            environment {
-                VAULT_TOKEN = credentials('vault-token-smart')
-            }
-            steps {
-                sh '''
-                export HARBOR_USER=$(vault kv get -field=HARBOR_USER $VAULT_SECRET_PATH)
-                export HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD $VAULT_SECRET_PATH)
-                export JWT_SECRET=$(vault kv get -field=JWT_SECRET $VAULT_SECRET_PATH)
-                export MONGO_URI=$(vault kv get -field=MONGO_URI $VAULT_SECRET_PATH)
+    environment {
+        VAULT_ADDR = "http://127.0.0.1:8200"
+        VAULT_TOKEN = credentials('vault-token-smart')
+    }
 
-                echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
-                    -u "$HARBOR_USER" \
-                    --password-stdin
+    steps {
+        sh '''
+        export HARBOR_USER=$(vault kv get -field=HARBOR_USER secret/smart-task-management-system)
+        export HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD secret/smart-task-management-system)
+        export JWT_SECRET=$(vault kv get -field=JWT_SECRET secret/smart-task-management-system)
+        export MONGO_URI=$(vault kv get -field=MONGO_URI secret/smart-task-management-system)
 
-                # Persist secrets for later stages in this workspace (not printed, not committed)
-                cat <<EOF > .env
+        echo "$HARBOR_PASSWORD" | docker login http://$HARBOR_URL \
+            -u "$HARBOR_USER" \
+            --password-stdin
+
+        cat <<EOF > .env
 JWT_SECRET=$JWT_SECRET
 MONGO_URI=$MONGO_URI
 EOF
-                '''
-            }
-        }
+        '''
+    }
+}
+
+
+
 
         stage('Tag Docker Images') {
             steps {
