@@ -8,6 +8,7 @@ pipeline {
     environment {
         IMAGE_NAME = "smart-task-management-system"
         DOCKER_COMPOSE = "docker compose"
+        SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -27,6 +28,28 @@ pipeline {
                 sh 'cd notification-service && npm install'
                 sh 'cd report-service && npm install'
                 sh 'cd api-gateway_1784010924579 && npm install'
+            }
+        }
+
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=Smart-Task-Management-System \
+                        -Dsonar.projectName=Smart-Task-Management-System \
+                        -Dsonar.sources=. \
+                        -Dsonar.sourceEncoding=UTF-8
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
@@ -52,6 +75,7 @@ pipeline {
     post {
         always {
             echo 'Pipeline Finished'
+            cleanWs()
         }
 
         success {
