@@ -94,7 +94,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'harbor-creds',
+                        credentialsId: 'harbor-creds-smart',
                         usernameVariable: 'HARBOR_USER',
                         passwordVariable: 'HARBOR_PASS'
                     )
