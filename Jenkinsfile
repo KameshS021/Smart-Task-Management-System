@@ -19,6 +19,9 @@ pipeline {
         FRONTEND_IMAGE = "smart-task-management-system-frontend"
 
         IMAGE_TAG = "v1"
+
+        VAULT_ADDR = "http://127.0.0.1:8200"
+        VAULT_SECRET_PATH = "secret/data/smart-task-management-system"
     }
 
     stages {
@@ -90,21 +93,27 @@ pipeline {
             }
         }
 
-        stage('Harbor Login') {
+        stage('Fetch Secrets From Vault & Harbor Login') {
+            environment {
+                VAULT_TOKEN = credentials('vault-token-smart')
+            }
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'harbor-creds-smart',
-                        usernameVariable: 'HARBOR_USER',
-                        passwordVariable: 'HARBOR_PASS'
-                    )
-                ]) {
-                    sh '''
-                    echo "$HARBOR_PASS" | docker login $HARBOR_URL \
+                sh '''
+                export HARBOR_USER=$(vault kv get -field=HARBOR_USER $VAULT_SECRET_PATH)
+                export HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD $VAULT_SECRET_PATH)
+                export JWT_SECRET=$(vault kv get -field=JWT_SECRET $VAULT_SECRET_PATH)
+                export MONGO_URI=$(vault kv get -field=MONGO_URI $VAULT_SECRET_PATH)
+
+                echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
                     -u "$HARBOR_USER" \
                     --password-stdin
-                    '''
-                }
+
+                # Persist secrets for later stages in this workspace (not printed, not committed)
+                cat <<EOF > .env
+JWT_SECRET=$JWT_SECRET
+MONGO_URI=$MONGO_URI
+EOF
+                '''
             }
         }
 
@@ -136,7 +145,7 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                sh 'docker compose up -d'
+                sh 'docker compose --env-file .env up -d'
             }
         }
 
@@ -149,14 +158,13 @@ pipeline {
 
     post {
         always {
+            sh 'rm -f .env || true'
             cleanWs()
             echo 'Pipeline Finished'
         }
-
         success {
             echo 'CI/CD Pipeline Executed Successfully'
         }
-
         failure {
             echo 'CI/CD Pipeline Failed'
         }
