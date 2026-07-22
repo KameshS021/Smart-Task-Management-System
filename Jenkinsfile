@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -35,11 +36,11 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        ${SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=Smart-Task-Management-System \
-                        -Dsonar.projectName=Smart-Task-Management-System \
-                        -Dsonar.sources=. \
-                        -Dsonar.sourceEncoding=UTF-8
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=Smart-Task-Management-System \
+                    -Dsonar.projectName=Smart-Task-Management-System \
+                    -Dsonar.sources=. \
+                    -Dsonar.sourceEncoding=UTF-8
                     '''
                 }
             }
@@ -53,9 +54,38 @@ pipeline {
             }
         }
 
+        stage('Trivy File System Scan') {
+            steps {
+                sh '''
+                trivy fs \
+                --severity HIGH,CRITICAL \
+                --format table \
+                .
+                '''
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 sh 'docker compose build'
+            }
+        }
+
+        stage('Trivy Docker Image Scan') {
+            steps {
+                sh '''
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-auth-service:latest
+
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-task-service:latest
+
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-notification-service:latest
+
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-report-service:latest
+
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-api-gateway:latest
+
+                trivy image --severity HIGH,CRITICAL --format table smart-task-management-system-frontend:latest
+                '''
             }
         }
 
