@@ -26,7 +26,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/KameshS021/Smart-Task-Management-System.git'
+                    url: 'https://github.com/KameshS021/Smart-Task-Management-System.git'
             }
         }
 
@@ -34,15 +34,10 @@ pipeline {
             steps {
                 sh '''
                 cd frontend && npm install
-
                 cd ../auth-service_1784011000189 && npm install
-
                 cd ../task-service && npm install
-
                 cd ../notification-service && npm install
-
                 cd ../report-service && npm install
-
                 cd ../api-gateway_1784010924579 && npm install
                 '''
             }
@@ -95,16 +90,6 @@ pipeline {
             }
         }
 
-        stage('Start Harbor') {
-            steps {
-                sh '''
-                cd /opt/harbor
-                docker compose up -d
-                sleep 30
-                '''
-            }
-        }
-
         stage('Harbor Login') {
             steps {
                 withCredentials([
@@ -127,15 +112,10 @@ pipeline {
             steps {
                 sh """
                 docker tag ${AUTH_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/auth-service:${IMAGE_TAG}
-
                 docker tag ${TASK_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/task-service:${IMAGE_TAG}
-
                 docker tag ${NOTIFICATION_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/notification-service:${IMAGE_TAG}
-
                 docker tag ${REPORT_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/report-service:${IMAGE_TAG}
-
                 docker tag ${API_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/api-gateway:${IMAGE_TAG}
-
                 docker tag ${FRONTEND_IMAGE}:latest $HARBOR_URL/$HARBOR_PROJECT/frontend:${IMAGE_TAG}
                 """
             }
@@ -145,15 +125,10 @@ pipeline {
             steps {
                 sh """
                 docker push $HARBOR_URL/$HARBOR_PROJECT/auth-service:${IMAGE_TAG}
-
                 docker push $HARBOR_URL/$HARBOR_PROJECT/task-service:${IMAGE_TAG}
-
                 docker push $HARBOR_URL/$HARBOR_PROJECT/notification-service:${IMAGE_TAG}
-
                 docker push $HARBOR_URL/$HARBOR_PROJECT/report-service:${IMAGE_TAG}
-
                 docker push $HARBOR_URL/$HARBOR_PROJECT/api-gateway:${IMAGE_TAG}
-
                 docker push $HARBOR_URL/$HARBOR_PROJECT/frontend:${IMAGE_TAG}
                 """
             }
@@ -179,11 +154,11 @@ pipeline {
         }
 
         success {
-            echo 'CI Pipeline Completed Successfully'
+            echo 'CI/CD Pipeline Executed Successfully'
         }
 
         failure {
-            echo 'CI Pipeline Failed'
+            echo 'CI/CD Pipeline Failed'
         }
     }
 }
