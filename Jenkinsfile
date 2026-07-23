@@ -21,7 +21,7 @@ pipeline {
         IMAGE_TAG = "v1"
 
         VAULT_ADDR = "http://127.0.0.1:8200"
-        VAULT_SECRET_PATH = "secret/data/smart-task-management-system"
+        VAULT_SECRET_PATH = "secret/smart-task-management-system"
     }
 
     stages {
@@ -120,15 +120,6 @@ EOF
         '''
     }
 }
-
-
-
-
-
-
-
-
-
 
         stage('Tag Docker Images') {
             steps {
