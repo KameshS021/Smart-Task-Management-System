@@ -8,7 +8,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'SonarScanner'
 
-        HARBOR_URL = "192.168.1.29"
+        HARBOR_URL = "192.168.1.38"
         HARBOR_PROJECT = "smart-task-management-system"
 
         AUTH_IMAGE = "smart-task-management-system-auth-service"
@@ -18,7 +18,7 @@ pipeline {
         API_IMAGE = "smart-task-management-system-api-gateway"
         FRONTEND_IMAGE = "smart-task-management-system-frontend"
 
-        IMAGE_TAG = "v1"
+        IMAGE_TAG = "${BUILD_NUMBER}"
 
         VAULT_ADDR = "http://127.0.0.1:8200"
         VAULT_SECRET_PATH = "secret/smart-task-management-system"
@@ -94,32 +94,32 @@ pipeline {
         }
 
         stage('Fetch Secrets From Vault & Harbor Login') {
-    environment {
-        VAULT_TOKEN = credentials('vault-token-smart')
-        VAULT_ADDR = "http://127.0.0.1:8200"
-    }
+            environment {
+                VAULT_TOKEN = credentials('vault-token-smart')
+                VAULT_ADDR = "http://127.0.0.1:8200"
+            }
 
-    steps {
-        sh '''
-        export VAULT_ADDR=$VAULT_ADDR
-        export VAULT_TOKEN=$VAULT_TOKEN
+            steps {
+                sh '''
+                export VAULT_ADDR=$VAULT_ADDR
+                export VAULT_TOKEN=$VAULT_TOKEN
 
-        HARBOR_USER=$(vault kv get -field=HARBOR_USER $VAULT_SECRET_PATH)
-        HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD $VAULT_SECRET_PATH)
-        JWT_SECRET=$(vault kv get -field=JWT_SECRET $VAULT_SECRET_PATH)
-        MONGO_URI=$(vault kv get -field=MONGO_URI $VAULT_SECRET_PATH)
+                HARBOR_USER=$(vault kv get -field=HARBOR_USER $VAULT_SECRET_PATH)
+                HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD $VAULT_SECRET_PATH)
+                JWT_SECRET=$(vault kv get -field=JWT_SECRET $VAULT_SECRET_PATH)
+                MONGO_URI=$(vault kv get -field=MONGO_URI $VAULT_SECRET_PATH)
 
-        echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
-          -u "$HARBOR_USER" \
-          --password-stdin
+                echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
+                  -u "$HARBOR_USER" \
+                  --password-stdin
 
-        cat > .env <<EOF
+                cat > .env <<EOF
 JWT_SECRET=$JWT_SECRET
 MONGO_URI=$MONGO_URI
 EOF
-        '''
-    }
-}
+                '''
+            }
+        }
 
         stage('Tag Docker Images') {
             steps {
@@ -147,15 +147,64 @@ EOF
             }
         }
 
-        stage('Deploy Application') {
+        stage('Helm Lint') {
             steps {
-                sh 'docker compose --env-file .env up -d'
+                sh '''
+                helm lint helm/frontend
+                helm lint helm/api-gateway
+                helm lint helm/auth-service
+                helm lint helm/task-service
+                helm lint helm/notification-service
+                helm lint helm/report-service
+                '''
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Helm Package') {
             steps {
-                sh 'docker ps'
+                sh '''
+                mkdir -p helm-packages
+
+                helm package helm/frontend -d helm-packages
+                helm package helm/api-gateway -d helm-packages
+                helm package helm/auth-service -d helm-packages
+                helm package helm/task-service -d helm-packages
+                helm package helm/notification-service -d helm-packages
+                helm package helm/report-service -d helm-packages
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes using Helm') {
+            steps {
+                sh '''
+                helm upgrade --install frontend helm/frontend -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install api-gateway helm/api-gateway -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install auth-service helm/auth-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install task-service helm/task-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install notification-service helm/notification-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install report-service helm/report-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Verify Kubernetes Deployment') {
+            steps {
+                sh '''
+                kubectl get nodes
+                kubectl get deployments -n smart-task
+                kubectl get pods -n smart-task
+                kubectl get svc -n smart-task
+                kubectl get ingress -n smart-task
+                helm list -n smart-task
+
+                kubectl rollout status deployment/frontend -n smart-task
+                kubectl rollout status deployment/api-gateway -n smart-task
+                kubectl rollout status deployment/auth-service -n smart-task
+                kubectl rollout status deployment/task-service -n smart-task
+                kubectl rollout status deployment/notification-service -n smart-task
+                kubectl rollout status deployment/report-service -n smart-task
+                '''
             }
         }
     }
