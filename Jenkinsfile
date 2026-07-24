@@ -20,7 +20,7 @@ pipeline {
 
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        VAULT_ADDR = "http://127.0.0.1:8200"
+        VAULT_ADDR = "https://127.0.0.1:8200"
         VAULT_SECRET_PATH = "secret/smart-task-management-system"
     }
 
@@ -94,32 +94,33 @@ pipeline {
         }
 
         stage('Fetch Secrets From Vault & Harbor Login') {
-            environment {
-                VAULT_TOKEN = credentials('vault-token-smart')
-                VAULT_ADDR = "http://127.0.0.1:8200"
-            }
+    environment {
+        VAULT_TOKEN = credentials('vault-token-smart')
+        VAULT_ADDR = "https://127.0.0.1:8200"
+    }
 
-            steps {
-                sh '''
-                export VAULT_ADDR=$VAULT_ADDR
-                export VAULT_TOKEN=$VAULT_TOKEN
+    steps {
+        sh '''
+        export VAULT_ADDR=$VAULT_ADDR
+        export VAULT_SKIP_VERIFY=true
+        export VAULT_TOKEN=$VAULT_TOKEN
 
-                HARBOR_USER=$(vault kv get -field=HARBOR_USER $VAULT_SECRET_PATH)
-                HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD $VAULT_SECRET_PATH)
-                JWT_SECRET=$(vault kv get -field=JWT_SECRET $VAULT_SECRET_PATH)
-                MONGO_URI=$(vault kv get -field=MONGO_URI $VAULT_SECRET_PATH)
+        HARBOR_USER=$(vault kv get -field=HARBOR_USER secret/smart-task-management-system)
+        HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD secret/smart-task-management-system)
+        JWT_SECRET=$(vault kv get -field=JWT_SECRET secret/smart-task-management-system)
+        MONGO_URI=$(vault kv get -field=MONGO_URI secret/smart-task-management-system)
 
-                echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
-                  -u "$HARBOR_USER" \
-                  --password-stdin
+        echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
+            -u "$HARBOR_USER" \
+            --password-stdin
 
-                cat > .env <<EOF
+        cat > .env <<EOF
 JWT_SECRET=$JWT_SECRET
 MONGO_URI=$MONGO_URI
 EOF
-                '''
-            }
-        }
+        '''
+    }
+}
 
         stage('Tag Docker Images') {
             steps {
