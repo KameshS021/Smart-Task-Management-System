@@ -8,7 +8,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'SonarScanner'
 
-        HARBOR_URL = "192.168.1.38"
+        HARBOR_URL = "192.168.1.29"
         HARBOR_PROJECT = "smart-task-management-system"
 
         AUTH_IMAGE = "smart-task-management-system-auth-service"
