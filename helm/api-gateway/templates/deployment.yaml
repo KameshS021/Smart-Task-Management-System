@@ -52,26 +52,23 @@ spec:
                   name: smart-task-secret
                   key: AUTH_SERVICE_URL
 
-           - name: TASK_SERVICE_URL
-             valueFrom:
-               secretKeyRef:
-                 name: smart-task-secret
-                 key: TASK_SERVICE_URL
+            - name: TASK_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: smart-task-secret
+                  key: TASK_SERVICE_URL
 
-          - name: NOTIFICATION_SERVICE_URL
-            valueFrom:
-              secretKeyRef:
-                name: smart-task-secret
-                key: NOTIFICATION_SERVICE_URL
+            - name: NOTIFICATION_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: smart-task-secret
+                  key: NOTIFICATION_SERVICE_URL
 
-         - name: REPORT_SERVICE_URL
-           valueFrom:
-             secretKeyRef:
-               name: smart-task-secret
-               key: REPORT_SERVICE_URL
-
-
-
+            - name: REPORT_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: smart-task-secret
+                  key: REPORT_SERVICE_URL
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
