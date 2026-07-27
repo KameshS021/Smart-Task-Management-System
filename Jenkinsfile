@@ -52,8 +52,8 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh """
                     ${SCANNER_HOME}/bin/sonar-scanner \
-                    -Dsonar.projectKey=Smart-Task-Management-System \
-                    -Dsonar.projectName=Smart-Task-Management-System \
+                    -Dsonar.projectKey=Smart-Task-Management-System02 \
+                    -Dsonar.projectName=Smart-Task-Management-System02 \
                     -Dsonar.sources=. \
                     -Dsonar.sourceEncoding=UTF-8
                     """
