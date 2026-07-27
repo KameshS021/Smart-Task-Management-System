@@ -40,5 +40,28 @@ spec:
             - name: MONGO_URI
               value: "{{ .Values.env.MONGO_URI }}"
 
-          resources:
+         env:
+            - name: PORT
+              value: "{{ .Values.env.PORT }}"
+
+            - name: JWT_SECRET
+              value: "{{ .Values.env.JWT_SECRET }}"
+
+            - name: MONGO_URI
+              value: "{{ .Values.env.MONGO_URI }}"
+
+            - name: AUTH_SERVICE_URL
+              value: "{{ .Values.env.AUTH_SERVICE_URL }}"
+
+            - name: TASK_SERVICE_URL
+              value: "{{ .Values.env.TASK_SERVICE_URL }}"
+
+            - name: NOTIFICATION_SERVICE_URL
+              value: "{{ .Values.env.NOTIFICATION_SERVICE_URL }}"
+
+            - name: REPORT_SERVICE_URL
+              value: "{{ .Values.env.REPORT_SERVICE_URL }}"
+
+
+        resources:
             {{- toYaml .Values.resources | nindent 12 }}
