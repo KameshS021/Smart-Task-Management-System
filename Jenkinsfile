@@ -29,7 +29,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                credentials: 'git-cred',
+                credentials: 'git-creds',
                     url: 'https://github.com/KameshS021/Smart-Task-Management-System.git'
             }
         }
