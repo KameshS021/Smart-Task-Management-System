@@ -64,7 +64,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -127,6 +127,37 @@ TASK_SERVICE_URL=$TASK_SERVICE_URL
 NOTIFICATION_SERVICE_URL=$NOTIFICATION_SERVICE_URL
 REPORT_SERVICE_URL=$REPORT_SERVICE_URL
 EOF
+                '''
+            }
+        }
+
+        stage('Create Kubernetes Secret') {
+            environment {
+                VAULT_TOKEN = credentials('vault-token-smart')
+                VAULT_ADDR = "http://13.48.106.244:8200"
+            }
+
+            steps {
+                sh '''
+                export VAULT_ADDR=$VAULT_ADDR
+                export VAULT_TOKEN=$VAULT_TOKEN
+
+                JWT_SECRET=$(vault kv get -field=JWT_SECRET secret/smart-task-management-system)
+                MONGO_URI=$(vault kv get -field=MONGO_URI secret/smart-task-management-system)
+                AUTH_SERVICE_URL=$(vault kv get -field=AUTH_SERVICE_URL secret/smart-task-management-system)
+                TASK_SERVICE_URL=$(vault kv get -field=TASK_SERVICE_URL secret/smart-task-management-system)
+                NOTIFICATION_SERVICE_URL=$(vault kv get -field=NOTIFICATION_SERVICE_URL secret/smart-task-management-system)
+                REPORT_SERVICE_URL=$(vault kv get -field=REPORT_SERVICE_URL secret/smart-task-management-system)
+
+                kubectl create secret generic smart-task-secret \
+                    --namespace smart-task \
+                    --from-literal=JWT_SECRET="$JWT_SECRET" \
+                    --from-literal=MONGO_URI="$MONGO_URI" \
+                    --from-literal=AUTH_SERVICE_URL="$AUTH_SERVICE_URL" \
+                    --from-literal=TASK_SERVICE_URL="$TASK_SERVICE_URL" \
+                    --from-literal=NOTIFICATION_SERVICE_URL="$NOTIFICATION_SERVICE_URL" \
+                    --from-literal=REPORT_SERVICE_URL="$REPORT_SERVICE_URL" \
+                    --dry-run=client -o yaml | kubectl apply -f -
                 '''
             }
         }
