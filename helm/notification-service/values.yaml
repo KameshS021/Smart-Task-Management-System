@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: 192.168.1.16/smart-task-management-system/notification-service
+  repository: 13.48.106.244/smart-task-management-system/notification-service
   tag: v1
   pullPolicy: Always
 

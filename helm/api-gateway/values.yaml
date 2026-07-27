@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: 192.168.1.16/smart-task-management-system/api-gateway
+  repository: 13.48.106.244/smart-task-management-system/api-gateway
   tag: v1
   pullPolicy: Always
 
