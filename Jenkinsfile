@@ -8,7 +8,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'SonarScanner'
 
-        HARBOR_URL = "192.168.1.29"
+        HARBOR_URL = "13.48.106.244"
         HARBOR_PROJECT = "smart-task-management-system"
 
         AUTH_IMAGE = "smart-task-management-system-auth-service"
@@ -20,7 +20,7 @@ pipeline {
 
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        VAULT_ADDR = "https://127.0.0.1:8200"
+        VAULT_ADDR = "http://13.48.106.244:8200"
         VAULT_SECRET_PATH = "secret/smart-task-management-system"
     }
 
@@ -29,6 +29,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
+                credentials: 'git-cred',
                     url: 'https://github.com/KameshS021/Smart-Task-Management-System.git'
             }
         }
@@ -63,7 +64,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -96,7 +97,7 @@ pipeline {
         stage('Fetch Secrets From Vault & Harbor Login') {
     environment {
         VAULT_TOKEN = credentials('vault-token-smart')
-        VAULT_ADDR = "https://127.0.0.1:8200"
+        VAULT_ADDR = "http://13.48.106.244:8200"
     }
 
     steps {
