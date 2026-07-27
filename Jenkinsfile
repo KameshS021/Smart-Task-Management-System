@@ -200,12 +200,12 @@ EOF
                 kubectl get ingress -n smart-task
                 helm list -n smart-task
 
-                kubectl rollout status deployment/frontend -n smart-task
-                kubectl rollout status deployment/api-gateway -n smart-task
-                kubectl rollout status deployment/auth-service -n smart-task
-                kubectl rollout status deployment/task-service -n smart-task
-                kubectl rollout status deployment/notification-service -n smart-task
-                kubectl rollout status deployment/report-service -n smart-task
+                kubectl rollout status deployment/frontend-frontend -n smart-task
+                kubectl rollout status deployment/api-gateway-api-gateway -n smart-task
+                kubectl rollout status deployment/auth-service-auth-service -n smart-task
+                kubectl rollout status deployment/task-service-task-service -n smart-task
+                kubectl rollout status deployment/notification-service-notification-service -n smart-task
+                kubectl rollout status deployment/report-service-report-service -n smart-task
                 '''
             }
         }
