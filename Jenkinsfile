@@ -29,7 +29,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                credentialsId: 'git-creds',
+                    credentialsId: 'git-creds',
                     url: 'https://github.com/KameshS021/Smart-Task-Management-System.git'
             }
         }
@@ -95,32 +95,31 @@ pipeline {
         }
 
         stage('Fetch Secrets From Vault & Harbor Login') {
-    environment {
-        VAULT_TOKEN = credentials('vault-token-smart')
-        VAULT_ADDR = "http://13.48.106.244:8200"
-    }
+            environment {
+                VAULT_TOKEN = credentials('vault-token-smart')
+                VAULT_ADDR = "http://13.48.106.244:8200"
+            }
 
-    steps {
-        sh '''
-        export VAULT_ADDR=$VAULT_ADDR
-        export VAULT_SKIP_VERIFY=true
-        export VAULT_TOKEN=$VAULT_TOKEN
+            steps {
+                sh '''
+                export VAULT_ADDR=$VAULT_ADDR
+                export VAULT_SKIP_VERIFY=true
+                export VAULT_TOKEN=$VAULT_TOKEN
 
-        HARBOR_USER=$(vault kv get -field=HARBOR_USER secret/smart-task-management-system)
-        HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD secret/smart-task-management-system)
-        JWT_SECRET=$(vault kv get -field=JWT_SECRET secret/smart-task-management-system)
-        MONGO_URI=$(vault kv get -field=MONGO_URI secret/smart-task-management-system)
-        AUTH_SERVICE_URL=$(vault kv get -field=AUTH_SERVICE_URL secret/smart-task-management-system)
-        TASK_SERVICE_URL=$(vault kv get -field=TASK_SERVICE_URL secret/smart-task-management-system)
-        NOTIFICATION_SERVICE_URL=$(vault kv get -field=NOTIFICATION_SERVICE_URL secret/smart-task-management-system)
-        REPORT_SERVICE_URL=$(vault kv get -field=REPORT_SERVICE_URL secret/smart-task-management-system)
+                HARBOR_USER=$(vault kv get -field=HARBOR_USER secret/smart-task-management-system)
+                HARBOR_PASSWORD=$(vault kv get -field=HARBOR_PASSWORD secret/smart-task-management-system)
+                JWT_SECRET=$(vault kv get -field=JWT_SECRET secret/smart-task-management-system)
+                MONGO_URI=$(vault kv get -field=MONGO_URI secret/smart-task-management-system)
+                AUTH_SERVICE_URL=$(vault kv get -field=AUTH_SERVICE_URL secret/smart-task-management-system)
+                TASK_SERVICE_URL=$(vault kv get -field=TASK_SERVICE_URL secret/smart-task-management-system)
+                NOTIFICATION_SERVICE_URL=$(vault kv get -field=NOTIFICATION_SERVICE_URL secret/smart-task-management-system)
+                REPORT_SERVICE_URL=$(vault kv get -field=REPORT_SERVICE_URL secret/smart-task-management-system)
 
-        echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
-            -u "$HARBOR_USER" \
-            --password-stdin
+                echo "$HARBOR_PASSWORD" | docker login $HARBOR_URL \
+                    -u "$HARBOR_USER" \
+                    --password-stdin
 
-        
-        cat > .env <<EOF
+                cat > .env <<EOF
 JWT_SECRET=$JWT_SECRET
 MONGO_URI=$MONGO_URI
 AUTH_SERVICE_URL=$AUTH_SERVICE_URL
@@ -128,9 +127,9 @@ TASK_SERVICE_URL=$TASK_SERVICE_URL
 NOTIFICATION_SERVICE_URL=$NOTIFICATION_SERVICE_URL
 REPORT_SERVICE_URL=$REPORT_SERVICE_URL
 EOF
-        '''
-    }
-}
+                '''
+            }
+        }
 
         stage('Tag Docker Images') {
             steps {
@@ -189,21 +188,41 @@ EOF
         stage('Deploy to Kubernetes using Helm') {
             steps {
                 sh '''
-                helm upgrade --install frontend helm/frontend -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                helm upgrade --install frontend helm/frontend \
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG}
+
                 helm upgrade --install api-gateway helm/api-gateway \
-                -n smart-task \
-                --create-namespace \
-                --set image.tag=${IMAGE_TAG} \
-                --set env.JWT_SECRET="${JWT_SECRET}" \ 
-                --set env.MONGO_URI="${MONGO_URI}" \
-                --set env.AUTH_SERVICE_URL="${AUTH_SERVICE_URL}" \
-                --set env.TASK_SERVICE_URL="${TASK_SERVICE_URL}" \
-                --set env.NOTIFICATION_SERVICE_URL="${NOTIFICATION_SERVICE_URL}" \
-                --set env.REPORT_SERVICE_URL="${REPORT_SERVICE_URL}"
-                helm upgrade --install auth-service helm/auth-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
-                helm upgrade --install task-service helm/task-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
-                helm upgrade --install notification-service helm/notification-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
-                helm upgrade --install report-service helm/report-service -n smart-task --create-namespace --set image.tag=${IMAGE_TAG}
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG} \
+                    --set env.JWT_SECRET="${JWT_SECRET}" \
+                    --set env.MONGO_URI="${MONGO_URI}" \
+                    --set env.AUTH_SERVICE_URL="${AUTH_SERVICE_URL}" \
+                    --set env.TASK_SERVICE_URL="${TASK_SERVICE_URL}" \
+                    --set env.NOTIFICATION_SERVICE_URL="${NOTIFICATION_SERVICE_URL}" \
+                    --set env.REPORT_SERVICE_URL="${REPORT_SERVICE_URL}"
+
+                helm upgrade --install auth-service helm/auth-service \
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG}
+
+                helm upgrade --install task-service helm/task-service \
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG}
+
+                helm upgrade --install notification-service helm/notification-service \
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG}
+
+                helm upgrade --install report-service helm/report-service \
+                    -n smart-task \
+                    --create-namespace \
+                    --set image.tag=${IMAGE_TAG}
                 '''
             }
         }
