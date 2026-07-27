@@ -1,5 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
   name: {{ include "api-gateway.fullname" . }}
   labels:
@@ -23,7 +24,6 @@ spec:
 
       containers:
         - name: api-gateway
-
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
@@ -31,16 +31,6 @@ spec:
             - containerPort: {{ .Values.containerPort }}
 
           env:
-            - name: PORT
-              value: "{{ .Values.env.PORT }}"
-
-            - name: JWT_SECRET
-              value: "{{ .Values.env.JWT_SECRET }}"
-
-            - name: MONGO_URI
-              value: "{{ .Values.env.MONGO_URI }}"
-
-         env:
             - name: PORT
               value: "{{ .Values.env.PORT }}"
 
@@ -62,6 +52,7 @@ spec:
             - name: REPORT_SERVICE_URL
               value: "{{ .Values.env.REPORT_SERVICE_URL }}"
 
-
-        resources:
+          resources:
             {{- toYaml .Values.resources | nindent 12 }}
+
+
