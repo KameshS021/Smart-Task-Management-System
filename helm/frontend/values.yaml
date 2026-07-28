@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: 13.48.106.244/smart-task-management-system/frontend
-  tag: "23"
+  tag: "25"
   pullPolicy: Always
 
 imagePullSecrets: []
