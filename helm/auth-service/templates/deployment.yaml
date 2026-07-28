@@ -38,6 +38,9 @@ spec:
         - name: JWT_SECRET
           value: "{{ .Values.env.JWT_SECRET }}"
 
+        - name: JWT_EXPIRES_IN
+          value: "{{ .Values.env.JWT.EXPIRES_IN }}"
+
         - name: MONGO_URI
           value: "{{ .Values.env.MONGO_URI }}"
 
