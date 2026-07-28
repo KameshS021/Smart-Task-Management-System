@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: 13.48.106.244/smart-task-management-system/report-service
-  tag: v1
+  tag: "23"
   pullPolicy: Always
 
 imagePullSecrets: []
