@@ -1,3 +1,4 @@
+
 // Task CRUD routes placeholder
 
 const express = require("express");
@@ -9,7 +10,7 @@ const {
   getAllTasks,
   getTaskById,
   updateTask,
-  deleteTask
+  deleteTask,
 } = require("../controllers/task.controller");
 
 router.get("/", (req, res) => {
@@ -19,7 +20,6 @@ router.get("/", (req, res) => {
   });
 });
 
-
 router.post("/create", authMiddleware, createTask);
 router.get("/all", authMiddleware, getAllTasks);
 router.get("/:id", authMiddleware, getTaskById);
@@ -27,6 +27,3 @@ router.put("/:id", authMiddleware, updateTask);
 router.delete("/:id", authMiddleware, deleteTask);
 
 module.exports = router;
-
-
-
