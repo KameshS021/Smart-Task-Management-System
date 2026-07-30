@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -29,9 +28,7 @@ export default function Dashboard() {
 
     try {
       await api.delete(`/api/tasks/${id}`);
-
       alert("Task deleted successfully");
-
       fetchTasks();
     } catch (err) {
       alert("Failed to delete task");
@@ -40,7 +37,7 @@ export default function Dashboard() {
   };
 
   const handleEdit = (id) => {
-    navigate(/edit/${id});
+    navigate(`/edit/${id}`);
   };
 
   return (
@@ -60,7 +57,11 @@ export default function Dashboard() {
 
       <h2>My Tasks</h2>
 
-      <table border="1" cellPadding="10" style={{ borderCollapse: "collapse" }}>
+      <table
+        border="1"
+        cellPadding="10"
+        style={{ borderCollapse: "collapse", width: "100%" }}
+      >
         <thead>
           <tr>
             <th>Title</th>

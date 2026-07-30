@@ -19,14 +19,12 @@ api.interceptors.request.use((config) => {
 
 // Delete Task API
 export const deleteTask = (id) => {
-  return api.delete(/api/tasks/${id});
+  return api.delete(`/api/tasks/${id}`);
 };
 
 // Update Task API
 export const updateTask = (id, data) => {
-  return api.put(/api/tasks/${id}, data);
+  return api.put(`/api/tasks/${id}`, data);
 };
 
 export default api;
-
-
