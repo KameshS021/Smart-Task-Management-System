@@ -28,7 +28,7 @@ export default function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      await api.delete(/api/tasks/${id});
+      await api.delete(`/api/tasks/${id}`);
 
       alert("Task deleted successfully");
 
